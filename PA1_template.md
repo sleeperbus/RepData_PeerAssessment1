@@ -1,36 +1,70 @@
 # Reproducible Research: Peer Assessment 1
-```{r globalOptions, echo=FALSE}
-opts_chunk$set(echo = TRUE)
-```
+
 
 ## Loading and preprocessing the data
 Load activity data into data frame and remove NA data
 Change factor date to date format
-```{r loadData}
+
+```r
 unzip("activity.zip")
 activity <- read.csv("activity.csv")
 activity$date <- as.Date(activity$date)
 summary(activity) 
+```
+
+```
+##      steps            date               interval   
+##  Min.   :  0.0   Min.   :2012-10-01   Min.   :   0  
+##  1st Qu.:  0.0   1st Qu.:2012-10-16   1st Qu.: 589  
+##  Median :  0.0   Median :2012-10-31   Median :1178  
+##  Mean   : 37.4   Mean   :2012-10-31   Mean   :1178  
+##  3rd Qu.: 12.0   3rd Qu.:2012-11-15   3rd Qu.:1766  
+##  Max.   :806.0   Max.   :2012-11-30   Max.   :2355  
+##  NA's   :2304
+```
+
+```r
 head(activity)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
 ```
 
 ## What is mean total number of steps taken per day?  
 We have 0 step data and NA step data. To get exact data, I remove NA steps.  
 Median of steps taken per day
-```{r median}
+
+```r
 library(plyr)
 na.removed <- subset(activity, is.na(steps) == FALSE)
 dayGrouped <- ddply(na.removed, .(date), summarise, 
                     day.sum = sum(steps, na.rm = TRUE))  
 median(dayGrouped$day.sum)
 ```
+
+```
+## [1] 10765
+```
 Mean of steps taken per day
-```{r mean} 
+
+```r
 mean(dayGrouped$day.sum)
+```
+
+```
+## [1] 10766
 ```
   
 Let's make a histogram.
-```{r stepsHistogram} 
+
+```r
 library(ggplot2)
 breaks <- pretty(range(dayGrouped$day.sum), 
                  n = nclass.FD(dayGrouped$day.sum), min.n=1)
@@ -42,10 +76,12 @@ ggplot(dayGrouped, aes(x=day.sum)) +
     xlab("Steps") + ylab("Number of Days")
 ```
 
+![plot of chunk stepsHistogram](figure/stepsHistogram.png) 
+
 ## What is the average daily activity pattern?
-```{r intevalMean}
-daily <- ddply(activity, .(interval),  summarise, 
-               step.mean = mean(steps, na.rm = TRUE))
+
+```r
+daily <- ddply(activity, .(interval),  summarise, step.mean = mean(steps, na.rm = TRUE))
 maxSteps <- max(daily$step.mean)
 maxInterval <- daily[which.max(daily$step.mean), c("interval")]
 position <- paste("[", as.integer(maxInterval), ", ", as.integer(maxSteps), "]", sep="")
@@ -54,26 +90,18 @@ ggplot(daily, aes(interval, step.mean)) + geom_line() +
     xlab("Time Interval") + ylab("Average Steps")
 ```
 
+![plot of chunk intevalMean](figure/intevalMean.png) 
+
 
 ## Imputing missing values  
 There are many NA rows.
-```{r NArows}
+
+```r
 nrow(activity[is.na(activity$steps), ])
 ```
-I use 5-minute interval for filling NA values.
-```{r fillingNA}
-replaceNA <- function(p_steps, p_interval) {
-    newStep <- p_steps
-    if (is.na(p_steps) == TRUE) {
-        newStep <- as.integer(
-            daily$step.mean[which(daily$interval == p_interval)]
-            )
-    }
-    newStep
-}
-activity <- ddply(activity, .(steps, date, interval), transform,
-                  steps = replaceNA(steps, interval))
-dayGrouped <- ddply(activity, .(date), summarise, day.sum = sum(steps))
+
+```
+## [1] 2304
 ```
 
 
