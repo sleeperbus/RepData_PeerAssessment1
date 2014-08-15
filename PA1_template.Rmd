@@ -1,6 +1,6 @@
 # Reproducible Research: Peer Assessment 1
 ```{r globalOptions, echo=FALSE}
-#opts_chunk$set(echo = TRUE)
+opts_chunk$set(echo = TRUE)
 ```
 
 ## Loading and preprocessing the data
