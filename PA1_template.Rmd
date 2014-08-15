@@ -1,16 +1,15 @@
 # Reproducible Research: Peer Assessment 1
 ```{r globalOptions, echo=FALSE}
-opts_chunk$set(echo = TRUE)
+#opts_chunk$set(echo = TRUE)
 ```
 
 ## Loading and preprocessing the data
-Load activity data into data frame and remove NA data
-Change factor date to date format
+Load activity data into data frame. There are many NA values. 
+Change factor date values to date format
 ```{r loadData}
 unzip("activity.zip")
 activity <- read.csv("activity.csv")
 activity$date <- as.Date(activity$date)
-summary(activity) 
 head(activity)
 ```
 
@@ -60,7 +59,8 @@ There are many NA rows.
 ```{r NArows}
 nrow(activity[is.na(activity$steps), ])
 ```
-I use 5-minute interval for filling NA values.
+I use 5-minute interval for filling NA values. After filling NA values, median 
+and mean values are lower than first try.
 ```{r fillingNA}
 replaceNA <- function(p_steps, p_interval) {
     newStep <- p_steps
@@ -71,14 +71,39 @@ replaceNA <- function(p_steps, p_interval) {
     }
     newStep
 }
-activity <- ddply(activity, .(steps, date, interval), transform,
+activity.new <- ddply(activity, .(steps, date, interval), transform,
                   steps = replaceNA(steps, interval))
-dayGrouped <- ddply(activity, .(date), summarise, day.sum = sum(steps))
+dayGrouped.new <- ddply(activity.new, .(date), summarise, day.sum = sum(steps)) 
+median(dayGrouped.new$day.sum)
+mean(dayGrouped.new$day.sum)
+```
+Here's new histogram with non NA values.
+```{r newHistogram}
+breaks.new <- pretty(range(dayGrouped$day.sum), 
+                 n = nclass.FD(dayGrouped$day.sum), min.n=1)
+binwidth.new <- breaks.new[2] - breaks.new[1]
+ggplot(dayGrouped.new, aes(x=day.sum)) + 
+    geom_histogram(binwidth = binwidth.new, col = "white", 
+                   fill = "black", alpha = 0.5) +
+    geom_vline(xintercept = median(dayGrouped.new$day.sum), col = "red" ) +
+    xlab("Steps") + ylab("Number of Days") 
+```
+
+
+## Are there differences in activity patterns between weekdays and weekends?
+There are differences between two patterns. In weekdays, 5am to 9am is the most
+active time. Maybe the person who wear this device go to work by foot or riding
+bycycle.
+```{r weekPlot}
+activity.new$week <- ifelse(weekdays(activity.new$date) == "Sunday" |  
+                                weekdays(activity.new$date) == "Saturday", 
+                            "weekend", "weekday")
+activity.new$week <- as.factor(activity.new$week)
+daily.new <- ddply(activity.new, .(interval, week), summarise,
+                   step.mean = mean(steps))
+ggplot(daily.new, aes(x=interval,y=step.mean)) + geom_line() + 
+    facet_grid(. ~ week) + xlab("Time Interval") + ylab("Average Steps")
 ```
 
 
 
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
