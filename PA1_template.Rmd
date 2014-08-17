@@ -92,7 +92,8 @@ binwidth.new <- breaks.new[2] - breaks.new[1]
 ggplot(dayGrouped.new, aes(x=day.sum)) + 
     geom_histogram(binwidth = binwidth.new, col = "white", 
                    fill = "black", alpha = 0.5) +
-    geom_vline(xintercept = median(dayGrouped.new$day.sum), col = "red" ) +
+    geom_vline(xintercept = median(dayGrouped.new$day.sum), col = "red",
+               linetype="dashed") +
     xlab("Steps") + ylab("Number of Days") 
 ```
 
