@@ -1,6 +1,11 @@
 # Reproducible Research: Peer Assessment 1
 ```{r globalOptions, echo=FALSE}
-#opts_chunk$set(echo = TRUE)
+library(knitr)
+library(markdown)
+opts_knit$set(progress = FALSE)
+opts_chunk$set(echo = TRUE, message = FALSE, tidy = TRUE, comment = NA,
+               fig.path = "figure/", fig.keep = "hight", fig.width = 10,
+               fig.height = 6, fig.align = "center")
 ```
 
 ## Loading and preprocessing the data
@@ -14,7 +19,7 @@ head(activity)
 ```
 
 ## What is mean total number of steps taken per day?  
-We have 0 step data and NA step data. To get exact data, I remove NA steps.  
+We have 0 step data and also NA step data. To get exact data, I remove NA steps.  
 Median of steps taken per day
 ```{r median}
 library(plyr)
@@ -37,7 +42,8 @@ binwidth <- breaks[2] - breaks[1]
 ggplot(dayGrouped, aes(x=day.sum)) + 
     geom_histogram(binwidth = binwidth, col = "white", 
                    fill = "black", alpha = 0.5) +
-    geom_vline(xintercept = median(dayGrouped$day.sum), col = "red" ) +
+    geom_vline(xintercept = median(dayGrouped$day.sum), col = "red",
+               linetype = "dashed") +
     xlab("Steps") + ylab("Number of Days")
 ```
 
@@ -51,6 +57,7 @@ position <- paste("[", as.integer(maxInterval), ", ", as.integer(maxSteps), "]",
 ggplot(daily, aes(interval, step.mean)) + geom_line() +
     annotate("text", x = maxInterval, y = maxSteps, label = position) +
     xlab("Time Interval") + ylab("Average Steps")
+print(maxSteps)
 ```
 
 
